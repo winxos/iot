@@ -6,8 +6,16 @@ import json
 from datetime import datetime
 import uuid
 import base64
+from flask_login import LoginManager
 
 app = Flask(__name__)
+lm = LoginManager()
+lm.init_app(app)
+
+
+# @lm.user_loader()
+# def load_user(id):
+#     return User.get(id)
 
 
 def reg_uuid(s):
@@ -30,7 +38,7 @@ def create():
         token = request.args.get("token")
         suid = reg_uuid(str(datetime.now()))
         if suid not in DEVICES:
-            DEVICES[suid] = "0"
+            DEVICES[suid] = []
         print(DEVICES)
         return make_response(suid)
     make_response("ok")
@@ -45,7 +53,11 @@ def query():
             s = "ERROR,DEVICE NOT EXIST."
         else:
             s = DEVICES[id]
-        return make_response(s)
+            count = request.args.get("count")
+            if count:
+                return make_response(" ".join(s[-int(count):]))
+            else:
+                return make_response(" ".join(s))
     return make_response("ok")
 
 
@@ -56,7 +68,7 @@ def update():
         if id in DEVICES:
             value = request.args.get("value")
             if value:
-                DEVICES[id] = value
+                DEVICES[id].append(value)
                 return make_response("Y")
         return make_response("N")
     return make_response("ok")
