@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 # iot demo
 # winxos , AISTLAB,2017-06-24
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, send_file, render_template
 import json
 from datetime import datetime
 import uuid
 import base64
 from flask_login import LoginManager
+from flask_qrcode import QRcode
 
 app = Flask(__name__)
 lm = LoginManager()
 lm.init_app(app)
+qrcode = QRcode(app)
 
 
 # @lm.user_loader()
@@ -84,6 +86,21 @@ def remove():
         else:
             return make_response("N")
     return make_response("ok")
+
+
+@app.route('/list', methods=['GET'])
+def list():
+    if request.method == 'GET':
+        return send_file(
+            qrcode("hello iot", mode='raw'),
+            mimetype='image/png',
+            cache_timeout=0)
+    return make_response("ok")
+
+
+@app.route('/qr')
+def qr():
+    return render_template('qr_test.html')
 
 
 if __name__ == '__main__':
