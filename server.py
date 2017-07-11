@@ -91,16 +91,25 @@ def remove():
 @app.route('/list', methods=['GET'])
 def list():
     if request.method == 'GET':
-        return send_file(
-            qrcode("hello iot", mode='raw'),
-            mimetype='image/png',
-            cache_timeout=0)
+        # return send_file(
+        #     qrcode("hello iot", mode='raw'),
+        #     mimetype='image/png',
+        #     cache_timeout=0)
+        list = []
+        for n in DEVICES:
+            list.append((n, n))
+        return render_template('list.html', list=list)
     return make_response("ok")
 
 
 @app.route('/qr')
 def qr():
-    return render_template('qr_test.html')
+    if request.method == 'GET':
+        id = request.args.get("id")
+        return send_file(
+            qrcode(id, mode='raw', error_correction="H", box_size=3),
+            mimetype='image/png',
+            cache_timeout=0)
 
 
 if __name__ == '__main__':
