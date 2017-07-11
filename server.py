@@ -37,11 +37,9 @@ DEVICES = {}
 @app.route('/create', methods=['GET'])
 def create():
     if request.method == 'GET':
-        token = request.args.get("token")
         suid = reg_uuid(str(datetime.now()))
         if suid not in DEVICES:
-            DEVICES[suid] = []
-        print(DEVICES)
+            DEVICES[suid] = {"num": len(DEVICES), "state": "ready"}
         return make_response(suid)
     make_response("ok")
 
@@ -50,16 +48,11 @@ def create():
 def query():
     if request.method == 'GET':
         id = request.args.get("id")
-        print(DEVICES)
         if id not in DEVICES:
             s = "ERROR,DEVICE NOT EXIST."
         else:
             s = DEVICES[id]
-            count = request.args.get("count")
-            if count:
-                return make_response(" ".join(s[-int(count):]))
-            else:
-                return make_response(" ".join(s))
+            return make_response(str(s))
     return make_response("ok")
 
 
@@ -97,8 +90,32 @@ def list():
         #     cache_timeout=0)
         list = []
         for n in DEVICES:
-            list.append((n, n))
-        return render_template('list.html', list=list)
+            list.append((n, DEVICES[n]))
+        return render_template('list.html', list=list, cache_timeout=0)
+    return make_response("ok")
+
+
+@app.route('/lend', methods=['GET'])
+def lend():
+    if request.method == 'GET':
+        id = request.args.get("id")
+        if id in DEVICES:
+            DEVICES[id]["state"] = "using"
+            return render_template("using.html", l=id)
+        else:
+            return make_response("ERROR")
+    return make_response("ok")
+
+
+@app.route('/lock', methods=['GET'])
+def lock():
+    if request.method == 'GET':
+        id = request.args.get("id")
+        if id in DEVICES:
+            DEVICES[id]["state"] = "ready"
+            return make_response("SUCCESS")
+        else:
+            return make_response("ERROR")
     return make_response("ok")
 
 
@@ -107,10 +124,30 @@ def qr():
     if request.method == 'GET':
         id = request.args.get("id")
         return send_file(
-            qrcode(id, mode='raw', error_correction="H", box_size=3),
+            qrcode("http://192.168.199.102:999/lend?id=" + id, mode='raw', error_correction="H", box_size=3),
             mimetype='image/png',
             cache_timeout=0)
 
 
+@app.route('/item')
+def item():
+    if request.method == 'GET':
+        id = request.args.get("id")
+        if id in DEVICES:
+            return render_template("item.html", l=(id, DEVICES[id]))
+        else:
+            print(id)
+            return make_response("ERROR")
+    return make_response("ok")
+
+
+@app.route('/test')
+def test():
+    if request.method == 'GET':
+        while len(DEVICES) < 10000:
+            create()
+        return "finished"
+
+
 if __name__ == '__main__':
-    app.run(debug=True, port=999)
+    app.run(host="0.0.0.0", debug=False, port=999)
