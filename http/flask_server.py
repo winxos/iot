@@ -118,18 +118,6 @@ def unlock():
     return make_response("ok")
 
 
-@app.route('/lock', methods=['GET'])
-def lock():
-    if request.method == 'GET':
-        id = request.args.get("id")
-        if id in DEVICES:
-            DEVICES[id]["state"] = "ready"
-            return make_response("SUCCESS")
-        else:
-            return make_response("ERROR")
-    return make_response("ok")
-
-
 @app.route('/qr')
 def qr():
     if request.method == 'GET':
