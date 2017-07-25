@@ -1,5 +1,12 @@
 # coding:utf-8
 # winxos 2017-7-7
+
+import socket
+
+SERVER_IP = ""
+SERVER_PORT = 8001
+
+
 class Agent:
     pass
 
@@ -8,6 +15,7 @@ class SimBike(Agent):
     def __init__(self, id):
         self.id = id
         self.server_info = ""
+        self.sk = socket.socket()
 
     def _unlock(self):
         pass

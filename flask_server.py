@@ -8,11 +8,21 @@ import uuid
 import base64
 from flask_login import LoginManager
 from flask_qrcode import QRcode
+from flask_socketio import SocketIO
+import socket
+
+UDP_SERVER_IP, UDP_SERVER_PORT = "192.168.8.128", 9999
+HTTP_SERVER_IP, HTTP_SERVER_PORT = "192.168.8.128", 999
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'passed'
+
 lm = LoginManager()
 lm.init_app(app)
 qrcode = QRcode(app)
+socketio = SocketIO(app)
 
 
 # @lm.user_loader()
@@ -95,15 +105,16 @@ def list():
     return make_response("ok")
 
 
-@app.route('/lend', methods=['GET'])
-def lend():
+@app.route('/unlock', methods=['GET'])
+def unlock():
     if request.method == 'GET':
         id = request.args.get("id")
-        if id in DEVICES:
-            DEVICES[id]["state"] = "using"
-            return render_template("using.html", l=id)
-        else:
-            return make_response("ERROR")
+        sock.sendto(("id=%s;cmd=unlock" % id).encode("utf8"), (UDP_SERVER_IP, UDP_SERVER_PORT))
+        # if id in DEVICES:
+        #     DEVICES[id]["state"] = "using"
+        #     return render_template("using.html", l=id)
+        # else:
+        #     return make_response("ERROR")
     return make_response("ok")
 
 
@@ -124,7 +135,9 @@ def qr():
     if request.method == 'GET':
         id = request.args.get("id")
         return send_file(
-            qrcode("http://192.168.199.102:999/lend?id=" + id, mode='raw', error_correction="H", box_size=3),
+            qrcode("http://%s:%d/unlock?id=" % (HTTP_SERVER_IP, HTTP_SERVER_PORT) + id, mode='raw',
+                   error_correction="H",
+                   box_size=3),
             mimetype='image/png',
             cache_timeout=0)
 
@@ -141,13 +154,13 @@ def item():
     return make_response("ok")
 
 
-@app.route('/test')
-def test():
+@app.route('/init')
+def init():
     if request.method == 'GET':
-        while len(DEVICES) < 10000:
+        while len(DEVICES) < 1000:
             create()
         return "finished"
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=False, port=999)
+    app.run(host="0.0.0.0", debug=False, port=HTTP_SERVER_PORT)
