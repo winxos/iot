@@ -21,14 +21,15 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
                 cs[ds[0]] = ds[1]
         if 'id' in cs:
             if cs['id'] not in DEVICES:  # first login
-                DEVICES[cs['id']] = {"state": "idle", "socket": socket}
-                DEVICES[cs['id']]["socket"].sendto("first time".encode("utf8"), self.client_address)
+                DEVICES[cs['id']] = {"state": "idle", "address": self.client_address}
+                # DEVICES[cs['id']]["socket"].sendto("first time".encode("utf8"), self.client_address)
             else:
-                DEVICES[cs['id']]["socket"].sendto("already".encode("utf8"), self.client_address)
+                # DEVICES[cs['id']]["socket"].sendto("already".encode("utf8"), self.client_address)
+                pass
             DEVICES[cs['id']]["last_alive"] = int(datetime.now().timestamp())
-            if cs['cmd'] == 'unlock':
-                DEVICES[cs['id']]["socket"].sendto("unlock".encode("utf8"), self.client_address)
-
+            if 'cmd' in cs:
+                if cs['cmd'] == 'unlock':
+                    socket.sendto("\x00\x00\x04\x01".encode("utf8"), DEVICES[cs['id']]["address"])
         print(DEVICES)
         socket.sendto(data.upper(), self.client_address)
 

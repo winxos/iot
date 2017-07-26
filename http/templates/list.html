@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BIKES SIM</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        {% for l in list %}
+        <div class="col-md-2 col-sm-6 p-3">
+            <span class=" text-center">NO:{{l[1]["num"]}}</span><br/>
+            <span class=" text-center">ID:{{l[0]}}</span><br/>
+            <span class=" text-center">STATE:{{l[1]["state"]}}</span><br/>
+            <a class="btn btn-primary" href="http://127.0.0.1:999/item?id={{l[0]}}">detail</a>
+        </div>
+        {%endfor%}
+    </div>
+
+</div>
+</body>
+<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/tether/1.4.0/js/tether.min.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script>
+</html>
