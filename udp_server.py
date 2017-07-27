@@ -3,7 +3,10 @@
 # winxos , AISTLAB,2017-07-24
 import socketserver
 from datetime import datetime
+import logging
+import os
 
+logging.basicConfig(filename=os.path.join(os.getcwd(), 'log.txt'), level=logging.DEBUG)
 DEVICES = {}
 
 
@@ -12,7 +15,7 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
         data = self.request[0].strip()
         socket = self.request[1]
         d_s = data.decode('utf8')
-        print("[%s] %s" % (self.client_address[0], d_s))
+        logging.debug("[%s] %s" % (self.client_address[0], d_s))
         ds = d_s.split(';')  # format a=a1;b=b1;c=c1
         cs = {}
         for d in ds:  # get args
@@ -30,7 +33,7 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
             if 'cmd' in cs:
                 if cs['cmd'] == 'unlock':
                     socket.sendto("\x00\x00\x02\x00".encode("utf8"), DEVICES[cs['id']]["address"])
-        print(DEVICES)
+        logging.debug(DEVICES)
         socket.sendto(data.upper(), self.client_address)
 
 
