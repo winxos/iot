@@ -29,7 +29,7 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
             DEVICES[cs['id']]["last_alive"] = int(datetime.now().timestamp())
             if 'cmd' in cs:
                 if cs['cmd'] == 'unlock':
-                    socket.sendto("\x00\x00\x04\x01".encode("utf8"), DEVICES[cs['id']]["address"])
+                    socket.sendto("\x00\x00\x02\x00".encode("utf8"), DEVICES[cs['id']]["address"])
         print(DEVICES)
         socket.sendto(data.upper(), self.client_address)
 

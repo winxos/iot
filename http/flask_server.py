@@ -11,8 +11,8 @@ from flask_qrcode import QRcode
 from flask_socketio import SocketIO
 import socket
 
-UDP_SERVER_IP, UDP_SERVER_PORT = "192.168.3.122", 9999
-HTTP_SERVER_IP, HTTP_SERVER_PORT = "192.168.3.122", 999
+UDP_SERVER_IP, UDP_SERVER_PORT = "192.168.199.102", 9999
+HTTP_SERVER_IP, HTTP_SERVER_PORT = "192.168.199.102", 999
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -109,7 +109,6 @@ def list():
 def unlock():
     if request.method == 'GET':
         id = request.args.get("id")
-        sock.sendto("test".encode("utf8"),(UDP_SERVER_IP, UDP_SERVER_PORT))
         print(id)
         sock.sendto(("id=%s;cmd=unlock" % id).encode("utf8"), (UDP_SERVER_IP, UDP_SERVER_PORT))
     return make_response("ok")
