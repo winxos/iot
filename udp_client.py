@@ -19,7 +19,7 @@ class getcmd(threading.Thread):
                 cmd = input()
                 self.sock.sendto(bytes(cmd, 'utf8'), (server_host, server_port))
             except Exception as e:
-                print("[shell err] %s" % e)
+                print("[error] %s" % e)
 
 
 class listener(threading.Thread):

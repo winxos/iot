@@ -6,7 +6,7 @@ from datetime import datetime
 import logging
 import os
 
-logging.basicConfig(filename=os.path.join(os.getcwd(), 'log.txt'), level=logging.DEBUG)
+logging.basicConfig(filename=os.path.join(os.getcwd(), 'log.txt'), filemode='w', level=logging.DEBUG)
 DEVICES = {}
 
 
@@ -33,6 +33,7 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
             if 'cmd' in cs:
                 if cs['cmd'] == 'unlock':
                     socket.sendto("\x00\x00\x02\x00".encode("utf8"), DEVICES[cs['id']]["address"])
+                    logging.debug("unlocking %s" % cs['id'])
         logging.debug(DEVICES)
         socket.sendto(data.upper(), self.client_address)
 

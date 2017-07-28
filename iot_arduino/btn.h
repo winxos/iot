@@ -19,15 +19,15 @@ u8 key_buf[MAX_KEYS]; //software key buffer
 long key_binded = 0; //binded bit check
 long key_trig_type = 0;
 
-void set_bit(long &data, u8 port)
+inline void set_bit(long &data, u8 port)
 {
   data |= (1 << port);
 }
-void clear_bit(long &data, u8 port)
+inline void clear_bit(long &data, u8 port)
 {
   data &= ~(1 << port);
 }
-u8 get_bit(long data, u8 port)
+inline u8 get_bit(long data, u8 port)
 {
   return (data & (1 << port)) > 0;
 }

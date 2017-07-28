@@ -24,8 +24,11 @@ extern WiFiUDP Udp;
 extern byte udp_buf[buf_size];
 //seconds
 #define  heart_seconds 300
-extern byte locked_state;
-
+#define  sampling_seconds 30
+enum STATE{IDLE,USING};
+extern STATE behavior_state;
+enum EVENT{EVENT_IDLE,EVENT_UNLOCKING,EVENT_LOCKING};
+extern EVENT event_state;
 int run_cmd(byte* buf);
 
 void udp_scan();

@@ -8,8 +8,12 @@
 
 #include "public.h"
 #include "btn.h"
+#include <SimpleDHT.h>
+int pinDHT11 = 14;
+SimpleDHT11 dht11;
 
-
+STATE behavior_state = IDLE;
+EVENT event_state = EVENT_IDLE;
 int wifi_init(int tries = 30)
 {
   if (tries < 0)return -1;
@@ -31,16 +35,60 @@ void heartbeat()
 
 void locking()
 {
-  if (locked_state == 0)
-  {
-    locked_state = 1;
-    digitalWrite(LED_PIN, LOW);
-    udp_send("state=locked");
-    Serial.println("[debug] locked");
+  event_state = EVENT_LOCKING;
+  Serial.println("[debug] locking");
+}
+void samping()
+{
+  byte temperature = 0;
+  byte humidity = 0;
+  if ( dht11.read(pinDHT11, &temperature, &humidity, NULL) == SimpleDHTErrSuccess) {
+    String s = "data=";
+    s += (int)temperature;
+    s += " ";
+    s += (int)humidity;
+    Serial.println(s);
+    udp_send((char*)s.c_str());
   }
-  else
+}
+unsigned long last_millis = 0, last_sampling_millis = 0;
+void state_loop()
+{
+  switch (behavior_state)
   {
-    Serial.println("[debug] already locked");
+    case IDLE:
+      if (millis() - last_millis > heart_seconds * 1000)
+      {
+        last_millis = millis();
+        heartbeat();
+      }
+      if (event_state == EVENT_UNLOCKING)
+      {
+        digitalWrite(LED_PIN, HIGH);
+        Serial.println("[debug] unlocked");
+        udp_send("state=unlocked");
+        behavior_state = USING; //IF SUCCESS
+        event_state = EVENT_IDLE;
+      }
+      break;
+    case USING:
+      if (millis() - last_sampling_millis > sampling_seconds * 1000)
+      {
+        last_sampling_millis = millis();
+        samping();
+      }
+      if (event_state == EVENT_LOCKING)
+      {
+        digitalWrite(LED_PIN, LOW);
+        udp_send("state=locked");
+        Serial.println("[debug] locked");
+        behavior_state = IDLE;
+        event_state = EVENT_IDLE;
+      }
+      break;
+    default:
+      Serial.println("error");
+      break;
   }
 }
 void setup()
@@ -58,23 +106,17 @@ void setup()
   Serial.println(local_port);
   Udp.begin(local_port);
   pinMode(4, OUTPUT);
-  digitalWrite(4, HIGH);
-  locked_state = 0; //default unlocked. locked manipulator.
+  digitalWrite(4, LOW);
   pinMode(2, INPUT);
   add_keydown_listener(2, &locking);
   heartbeat();
 }
-unsigned long last_millis = 0;
 
 void loop()
 {
   udp_scan();
   btn_scan();
-  if (millis() - last_millis > heart_seconds * 1000)
-  {
-    last_millis = millis();
-    heartbeat();
-  }
+  state_loop();
 }
 
 void printWifiStatus() {

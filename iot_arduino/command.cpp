@@ -1,6 +1,6 @@
 #pragma once
 #include "public.h"
-byte locked_state = 0;
+
 int is_invalid(byte*buf)
 {
   return 0;
@@ -12,15 +12,13 @@ void _dw(byte* a)
   {
     if(a[1]==0)//UNLOCK
     {
-      locked_state = 0;
-      digitalWrite(LED_PIN,HIGH);
-      Serial.println("[debug] unlocked");
-      udp_send("state=unlocked");
+      event_state = EVENT_UNLOCKING;
+      Serial.println("[debug] unlocking");
     }
     else //remote lock
     {
-      locked_state = 1;
-      digitalWrite(LED_PIN,LOW);
+      event_state = EVENT_LOCKING;
+      Serial.println("[debug] remote locking");
     }
   }
 }
