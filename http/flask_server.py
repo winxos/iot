@@ -110,7 +110,7 @@ def unlock():
     if request.method == 'GET':
         id = request.args.get("id")
         print(id)
-        sock.sendto(("id=%s;cmd=unlock" % id).encode("utf8"), (UDP_SERVER_IP, UDP_SERVER_PORT))
+        sock.sendto(("sid=%s;cmd=unlock" % id).encode("utf8"), (UDP_SERVER_IP, UDP_SERVER_PORT))
     return make_response("ok")
 
 

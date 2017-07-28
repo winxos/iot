@@ -6,7 +6,8 @@ from datetime import datetime
 import logging
 import os
 
-logging.basicConfig(filename=os.path.join(os.getcwd(), 'log.txt'), filemode='w', level=logging.DEBUG)
+logging.basicConfig(filename=os.path.join(os.getcwd(), 'log.txt'), filemode='w', level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s: %(message)s')
 DEVICES = {}
 
 
@@ -22,18 +23,22 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
             ds = d.split('=')
             if len(ds) > 1:  # has = symbol
                 cs[ds[0]] = ds[1]
-        if 'id' in cs:
+        if 'sid' in cs:  # from http server
+            if cs['sid'] in DEVICES:
+                if 'cmd' in cs:
+                    if cs['cmd'] == 'unlock':
+                        socket.sendto("\x00\x00\x02\x00".encode("utf8"), DEVICES[cs['sid']]["address"])
+                        logging.info("unlocking %s" % cs['sid'])
+        elif 'id' in cs:
             if cs['id'] not in DEVICES:  # first login
                 DEVICES[cs['id']] = {"state": "idle", "address": self.client_address}
                 # DEVICES[cs['id']]["socket"].sendto("first time".encode("utf8"), self.client_address)
             else:
                 # DEVICES[cs['id']]["socket"].sendto("already".encode("utf8"), self.client_address)
-                pass
+                if 'data' in cs:
+                    ds = cs['data'].split(' ')
+                    logging.info('[data] %s' % ' '.join(ds))
             DEVICES[cs['id']]["last_alive"] = int(datetime.now().timestamp())
-            if 'cmd' in cs:
-                if cs['cmd'] == 'unlock':
-                    socket.sendto("\x00\x00\x02\x00".encode("utf8"), DEVICES[cs['id']]["address"])
-                    logging.debug("unlocking %s" % cs['id'])
         logging.debug(DEVICES)
         socket.sendto(data.upper(), self.client_address)
 
