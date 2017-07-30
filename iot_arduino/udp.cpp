@@ -10,6 +10,9 @@ void udp_send(char *s)
   Udp.beginPacket(server_host, server_port);
   Udp.write((char*)ss.c_str());
   Udp.endPacket();
+  Serial.print("[udp send]");
+  Serial.print(ss);
+  Serial.println("[send end]");
 }
 void udp_scan()
 {

@@ -4,8 +4,6 @@
    simulation of mobike.
    winxos 2017-07-25
 */
-
-
 #include "public.h"
 #include "btn.h"
 #include <SimpleDHT.h>
@@ -18,7 +16,7 @@ int wifi_init(int tries = 30)
 {
   if (tries < 0)return -1;
   WiFi.begin(ssid, pass);
-  delay(1000);
+  delay(500);
   Serial.print("[debug] connecting to ");
   Serial.print(ssid);
   Serial.println(" ...");
@@ -109,7 +107,7 @@ void setup()
   digitalWrite(4, LOW);
   pinMode(2, INPUT);
   add_keydown_listener(2, &locking);
-  heartbeat();
+  udp_send("online");
 }
 
 void loop()

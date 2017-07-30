@@ -8,14 +8,14 @@ extern WiFiUDP Udp;
 #define LOCK_PIN 2
 #define LED_PIN 4
 //  your network SSID (name)
-#define  ssid "Aiesst"  
+#define  ssid "robot"  
 // your network password
-#define  pass "11111111"    
+#define  pass "x11111111"    
 // local port to listen for UDP packets  
 #define  local_port 12345    
 
-#define  server_host "192.168.199.102"
-//#define  server_host = "iot.aistl.com"
+#define  server_host "192.168.3.122"
+//#define  server_host "iot.aistl.com"
 #define server_port 9999
 
 #define  device_id "0280000001"
