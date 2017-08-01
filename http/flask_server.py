@@ -2,7 +2,6 @@
 # iot demo
 # winxos , AISTLAB,2017-06-24
 from flask import Flask, request, make_response, send_file, render_template
-import json
 from datetime import datetime
 import uuid
 import base64
@@ -11,8 +10,8 @@ from flask_qrcode import QRcode
 from flask_socketio import SocketIO
 import socket
 
-UDP_SERVER_IP, UDP_SERVER_PORT = "192.168.3.122", 9999
-HTTP_SERVER_IP, HTTP_SERVER_PORT = "192.168.3.122", 666
+UDP_SERVER_IP, UDP_SERVER_PORT = "192.168.199.102", 9999
+HTTP_SERVER_IP, HTTP_SERVER_PORT = "192.168.199.102", 666
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -147,4 +146,4 @@ def init():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=False, port=HTTP_SERVER_PORT)
+    app.run(host="0.0.0.0", debug=True, port=HTTP_SERVER_PORT)

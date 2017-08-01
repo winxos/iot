@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flask-SSE Quickstart</title>
+</head>
+<body>
+<h1>Flask-SSE Quickstart</h1>
+<p id="p"></p>
+<script>
+var source = new EventSource("/pubsub");
+  source.onmessage = function(event){
+    //alert(event.data);
+    var obj = document.getElementById("p");
+    obj.innerHTML= event.data;
+  };
+
+
+</script>
+</body>
+</html>
