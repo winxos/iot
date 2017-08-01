@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 # iot demo
 # winxos , AISTLAB,2017-06-24
-from flask import Flask, request, make_response, send_file, render_template
+from flask import Flask, request, make_response, send_file, render_template, Response
 from datetime import datetime
 import uuid
 import base64
 from flask_login import LoginManager
 from flask_qrcode import QRcode
-from flask_socketio import SocketIO
-import socket
+import redis
 
-UDP_SERVER_IP, UDP_SERVER_PORT = "192.168.199.102", 9999
+pool = redis.ConnectionPool(host='localhost', port=6379, db=1)
+r = redis.StrictRedis(connection_pool=pool)
+p = r.pubsub()
+p.subscribe(['device'])
+
 HTTP_SERVER_IP, HTTP_SERVER_PORT = "192.168.199.102", 666
-
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'passed'
@@ -21,7 +22,6 @@ app.config['SECRET_KEY'] = 'passed'
 lm = LoginManager()
 lm.init_app(app)
 qrcode = QRcode(app)
-socketio = SocketIO(app)
 
 
 # @lm.user_loader()
@@ -104,12 +104,27 @@ def list():
     return make_response("ok")
 
 
+@app.route('/pubsub')
+def pubsub():
+    def get_data():
+        for item in p.listen():
+            print(item)
+            if item['type'] == 'message':
+                data = item['data']
+                yield 'data:%s\n\n' % data
+                if item['data'] == 'over':
+                    break;
+        p.unsubscribe('device')
+
+    return Response(get_data(), mimetype="text/event-stream")
+
+
 @app.route('/unlock', methods=['GET'])
 def unlock():
     if request.method == 'GET':
-        id = request.args.get("id")
-        print(id)
-        sock.sendto(("sid=%s;cmd=unlock" % id).encode("utf8"), (UDP_SERVER_IP, UDP_SERVER_PORT))
+        id = request.args.get("sid")
+        r.publish('user', 'sid=%s;cmd=unlock' % id)
+        return render_template("index.html")
     return make_response("ok")
 
 
@@ -146,4 +161,4 @@ def init():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True, port=HTTP_SERVER_PORT)
+    app.run(host="0.0.0.0", debug=True, port=HTTP_SERVER_PORT, threaded=True)

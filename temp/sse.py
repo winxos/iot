@@ -11,7 +11,7 @@ app.config["REDIS_URL"] = "redis://localhost"
 pool = redis.ConnectionPool(host='localhost', port=6379, db=1)
 r = redis.StrictRedis(connection_pool=pool)
 p = r.pubsub()
-p.subscribe(['iot'])
+p.subscribe(['device'])
 
 
 @app.route('/stream')
@@ -56,11 +56,11 @@ def pubsub():
     return Response(get_data(), mimetype="text/event-stream")
 
 
-@app.route('/add')
-def fffff():
+@app.route('/unlock')
+def unlock():
     if request.method == 'GET':
         id = request.args.get("id")
-        r.publish('user', id)
+        r.publish('user', 'id=%s;cmd=unlock' % id)
     return make_response("ok")
 
 
