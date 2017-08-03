@@ -8,14 +8,14 @@ extern WiFiUDP Udp;
 #define LOCK_PIN 2
 #define LED_PIN 4
 //  your network SSID (name)
-#define  ssid "robot" 
-#define  pass "x11111111"   
-//#define  ssid "Aiesst"  
-//#define  pass "11111111"    
+//#define  ssid "robot" 
+//#define  pass "x11111111"   
+#define  ssid "Aiesst"  
+#define  pass "11111111"    
 // local port to listen for UDP packets  
 #define  local_port 12345    
 
-#define  server_host "192.168.3.122"
+#define  server_host "192.168.199.102"
 //#define  server_host "iot.aistl.com"
 #define server_port 9999
 
@@ -25,7 +25,7 @@ extern WiFiUDP Udp;
 extern byte udp_buf[buf_size];
 //seconds
 #define  heart_seconds 300
-#define  sampling_seconds 30
+#define  sampling_seconds 3
 enum STATE{IDLE,USING};
 extern STATE behavior_state;
 enum EVENT{EVENT_IDLE,EVENT_UNLOCKING,EVENT_LOCKING};

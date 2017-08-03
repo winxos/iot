@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
 # iot demo
 # winxos , AISTLAB,2017-06-24
-from flask import Flask, request, make_response, send_file, render_template, Response
+from flask import Flask, request, make_response, send_file, render_template, Response, session
 from datetime import datetime
 import uuid
 import base64
 from flask_login import LoginManager
 from flask_qrcode import QRcode
 import redis
+import time
 
 pool = redis.ConnectionPool(host='localhost', port=6379, db=1)
 r = redis.StrictRedis(connection_pool=pool)
-p = r.pubsub()
-p.subscribe(['device'])
 
-HTTP_SERVER_IP, HTTP_SERVER_PORT = "192.168.199.102", 666
+HTTP_SERVER_IP, HTTP_SERVER_PORT = "iot.aistl.com", 999
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'passed'
@@ -104,26 +103,68 @@ def list():
     return make_response("ok")
 
 
+def hash_message(d_s):
+    ds = d_s.split(';')  # format a=a1;b=b1;c=c1
+    cs = {}
+    for d in ds:  # get args
+        ds = d.split('=')
+        if len(ds) > 1:  # has = symbol
+            cs[ds[0]] = ds[1]
+    return cs
+
+
 @app.route('/pubsub')
 def pubsub():
-    def get_data():
+    print("pubsub in.")
+    p = r.pubsub()
+    p.subscribe(['device'])
+    cache = {}
+    print("first cache:%s" % cache)
+
+    def get_data(s, cache):
+        print("get_data in.")
         for item in p.listen():
             print(item)
             if item['type'] == 'message':
                 data = item['data']
+                ds = hash_message(data.decode('utf8'))
+                if 'ret' in ds:
+                    if ds['ret'] == 'error':
+                        if ds['state'] == 'using' and ds['user'] == s['id']:
+                            print('user:    %s' % ds['user'])
+                            break
+                cache['ret'] = 'success'
                 yield 'data:%s\n\n' % data
-                if item['data'] == 'over':
-                    break;
-        p.unsubscribe('device')
+        cache['ret'] = "error"
+        cache['msg'] = "using"
+        print("get_data out.")
+        yield 'data:%s\n\n' % "the device is using."
 
-    return Response(get_data(), mimetype="text/event-stream")
+    tmp = session.copy()
+    resp = get_data(tmp, cache)
+    next(resp)
+    print(cache)
+    if 'ret' in cache:
+        print(cache['ret'])
+        if cache['ret'] == 'error':
+            print('ret:%s' % cache['ret'])
+            p.unsubscribe('device')
+            return make_response("%s" % cache['ret'])
+    print("pubsub out.")
+    return Response(resp, mimetype="text/event-stream")
 
 
 @app.route('/unlock', methods=['GET'])
 def unlock():
     if request.method == 'GET':
+        print("sub")
+        if "id" in session:
+            print("%s already" % session["id"])
+        else:  # first
+            session["id"] = reg_uuid(str(time.time()))
+            print("%s first login" % session["id"])
         id = request.args.get("sid")
-        r.publish('user', 'sid=%s;cmd=unlock' % id)
+        r.publish('user', 'sid=%s;user=%s;cmd=unlock' % (id, session["id"]))
         return render_template("index.html")
     return make_response("ok")
 
@@ -133,7 +174,7 @@ def qr():
     if request.method == 'GET':
         id = request.args.get("id")
         return send_file(
-            qrcode("http://%s:%d/unlock?id=" % (HTTP_SERVER_IP, HTTP_SERVER_PORT) + id, mode='raw',
+            qrcode("http://%s:%d/unlock?sid=" % (HTTP_SERVER_IP, HTTP_SERVER_PORT) + id, mode='raw',
                    error_correction="H",
                    box_size=3),
             mimetype='image/png',
@@ -161,4 +202,4 @@ def init():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True, port=HTTP_SERVER_PORT, threaded=True)
+    app.run(host="0.0.0.0", debug=False, port=HTTP_SERVER_PORT, threaded=True)

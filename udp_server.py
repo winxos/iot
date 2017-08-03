@@ -57,7 +57,8 @@ class RedisListener(threading.Thread):
                                         socket.sendto("\x00\x00\x02\x00".encode("utf8"), DEVICES[cs['sid']]["address"])
                                         logging.info("unlocking %s" % cs['sid'])
                                     else:
-                                        r.publish('device', 'id=%s;ret=error;state=using' % cs['sid'])
+                                        r.publish('device',
+                                                  'id=%s;user=%s;ret=error;state=using' % (cs['sid'], cs['user']))
                                         logging.info("The device %s is using. " % cs['sid'])
                         else:
                             r.publish('device', 'id=%s;ret=error;state=offline' % cs['sid'])
@@ -73,7 +74,7 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         data = self.request[0].strip()
-        socket = self.request[1]
+        ss = self.request[1]
         d_s = data.decode('utf8')
         logging.debug("[udp received]%s[end]from:%s" % (self.client_address[0], d_s))
         cs = hash_message(d_s)
@@ -96,6 +97,7 @@ class MyUDPHandler(socketserver.BaseRequestHandler):
             DEVICES[cs['id']]["last_alive"] = int(datetime.now().timestamp())
         else:
             logging.debug("[udp]wrong format.")
+            ss.sendto(data.upper(), self.client_address)
         logging.debug(DEVICES)
 
 

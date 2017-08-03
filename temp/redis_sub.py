@@ -9,7 +9,7 @@ import redis
 pool = redis.ConnectionPool(host='localhost', port=6379, db=1)
 r = redis.StrictRedis(connection_pool=pool)
 p = r.pubsub()
-p.subscribe('user')
+p.subscribe('device')
 for item in p.listen():
     print(item)
     if item['type'] == 'message':
@@ -17,4 +17,4 @@ for item in p.listen():
         print(data)
         if item['data'] == 'over':
             break;
-p.unsubscribe('user')
+p.unsubscribe('device')

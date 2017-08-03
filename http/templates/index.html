@@ -7,12 +7,14 @@
 <h1>IOT DEMO</h1>
 <p id="p"></p>
 <script>
+console.log("hello");
 var source = new EventSource("/pubsub");
-  source.onmessage = function(event){
+source.onmessage = function(event){
     //alert(event.data);
     var obj = document.getElementById("p");
     obj.innerHTML= event.data;
   };
+
 </script>
 </body>
 </html>
