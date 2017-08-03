@@ -9,6 +9,7 @@ from flask_login import LoginManager
 from flask_qrcode import QRcode
 import redis
 import time
+from flask_socketio import SocketIO, send, emit
 
 pool = redis.ConnectionPool(host='localhost', port=6379, db=1)
 r = redis.StrictRedis(connection_pool=pool)
@@ -21,6 +22,7 @@ app.config['SECRET_KEY'] = 'passed'
 lm = LoginManager()
 lm.init_app(app)
 qrcode = QRcode(app)
+socketio = SocketIO(app)
 
 
 # @lm.user_loader()
@@ -111,6 +113,11 @@ def hash_message(d_s):
         if len(ds) > 1:  # has = symbol
             cs[ds[0]] = ds[1]
     return cs
+
+
+@socketio.on('my event')
+def handle_my_custom_event(json):
+    emit('my response', json, namespace='/chat')
 
 
 @app.route('/pubsub')

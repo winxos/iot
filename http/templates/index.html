@@ -2,18 +2,21 @@
 <html>
 <head>
     <title>IOT DEMO</title>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
 </head>
 <body>
 <h1>IOT DEMO</h1>
-<p id="p"></p>
-<script>
-console.log("hello");
-var source = new EventSource("/pubsub");
-source.onmessage = function(event){
-    //alert(event.data);
-    var obj = document.getElementById("p");
-    obj.innerHTML= event.data;
-  };
+<p id="log"></p>
+
+<script type="text/javascript" charset="utf-8">
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    socket.on('connect', function() {
+        socket.emit('my event', {data: 'I\'m connected!'});
+    });
+ socket.on('my response', function(msg) {
+        $('#log').append('<p>Received: ' + msg.data + '</p>');
+    });
+
 
 </script>
 </body>
