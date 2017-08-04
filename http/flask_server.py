@@ -7,9 +7,10 @@ import uuid
 import base64
 from flask_login import LoginManager
 from flask_qrcode import QRcode
-import redis
+
 import time
 from flask_socketio import SocketIO, send, emit
+import redis
 
 pool = redis.ConnectionPool(host='localhost', port=6379, db=1)
 r = redis.StrictRedis(connection_pool=pool)
@@ -171,7 +172,7 @@ def unlock():
             session["id"] = reg_uuid(str(time.time()))
             print("%s first login" % session["id"])
         id = request.args.get("sid")
-        r.publish('user', 'sid=%s;user=%s;cmd=unlock' % (id, session["id"]))
+        r.publish('d%s' % id, 'sid=%s;user=%s;cmd=unlock' % (id, session["id"]))
         return render_template("index.html")
     return make_response("ok")
 

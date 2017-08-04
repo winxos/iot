@@ -12,4 +12,4 @@ while True:
     if s == 'over':
         print('停止发布')
         break;
-    r.publish('user', s)
+    r.publish('device', s)
